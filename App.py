@@ -6,7 +6,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from transformers import BertTokenizer, BertModel
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.sequence import pad_sequences
 from huggingface_hub import hf_hub_download
 
 st.set_page_config(page_title="Fake News Detector", page_icon="📰", layout="wide")
