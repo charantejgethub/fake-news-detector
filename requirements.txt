@@ -5,5 +5,5 @@ tensorflow
 scikit-learn
 numpy
 matplotlib
-
+huggingface_hub
  
