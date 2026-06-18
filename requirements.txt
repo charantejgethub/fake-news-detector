@@ -1,7 +1,6 @@
 streamlit
 torch
 transformers
-tensorflow
 scikit-learn
 numpy
 matplotlib
