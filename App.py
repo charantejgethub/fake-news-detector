@@ -58,26 +58,13 @@ class BertClassifier(nn.Module):
 
 @st.cache_resource
 def load_all_models():
-    # Keras tokenizer
-    with open("models/tokenizer.pkl", "rb") as f:
-        keras_tok = pickle.load(f)
- 
+   
     # TF-IDF + LR + SVM
     with open("models/tfidf.pkl",     "rb") as f: tfidf     = pickle.load(f)
     with open("models/lr_model.pkl",  "rb") as f: lr_model  = pickle.load(f)
     with open("models/svm_model.pkl", "rb") as f: svm_model = pickle.load(f)
  
-    # BiLSTM
-    bilstm = BiLSTMAttention(
-    vocab_size = 20001,
-    embed_dim  = 128,
-    hidden_dim = 128,
-    num_layers = 2,
-    dropout    = 0.4)
-    ckpt   = torch.load("models/bilstm_best.pt", map_location="cpu")
-    bilstm.load_state_dict(ckpt["model_state_dict"])
-    bilstm.eval()
- 
+    
     # BERT tokenizer
     bert_tok = BertTokenizer.from_pretrained("bert-base-uncased")
  
@@ -96,9 +83,9 @@ def load_all_models():
 
     bert.eval()
  
-    return keras_tok, tfidf, lr_model, svm_model, bilstm, bert_tok, bert
+    return  tfidf, lr_model, svm_model, bert_tok, bert
  
-keras_tok, tfidf, lr_model, svm_model, bilstm, bert_tok, bert = load_all_models()
+tfidf, lr_model, svm_model,  bert_tok, bert = load_all_models()
 
 # ── Prediction Functions ───────────────────────────────────────────────────────
 def pad_sequences_custom(sequences, maxlen):
@@ -128,19 +115,7 @@ def predict_lr_svm(text, model, is_svm=False):
     
     return prob
  
-def predict_bilstm(text):
-    seq     = keras_tok.texts_to_sequences([text])
-    padded = pad_sequences_custom(
-    seq,
-    maxlen=50
-    )
-    x       = torch.tensor(padded, dtype=torch.long)
-    with torch.no_grad():
-        logit, attn_w = bilstm(x)
-    prob    = torch.sigmoid(logit).item()
-    weights = attn_w.squeeze(0).numpy()         # (50,)
-    tokens  = keras_tok.sequences_to_texts(seq)[0].split()
-    return prob, tokens, weights[:len(tokens)]
+
  
 def predict_bert(text):
     enc = bert_tok(text, max_length=50, padding="max_length",
@@ -201,7 +176,7 @@ with tab1:
  
     model_choice = st.selectbox(
         "Choose Model",
-        ["Logistic Regression", "SVM", "BiLSTM + Attention", "BERT"]
+        ["Logistic Regression", "SVM", "BERT"]
     )
  
     user_input = st.text_area("Enter news statement here:", height=120,
@@ -223,11 +198,7 @@ with tab1:
                     show_gauge(prob)
                     st.info("ℹ️ Word importance chart is only available for BiLSTM model.")
  
-                elif model_choice == "BiLSTM + Attention":
-                    prob, tokens, weights = predict_bilstm(user_input)
-                    show_gauge(prob)
-                    st.markdown("### 🔠 Word Importance")
-                    show_word_importance(tokens, weights)
+
  
                 elif model_choice == "BERT":
                     prob = predict_bert(user_input)
