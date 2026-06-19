@@ -5,4 +5,3 @@ scikit-learn
 numpy
 matplotlib
 huggingface_hub
-keras
