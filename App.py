@@ -102,6 +102,22 @@ def load_all_models():
 keras_tok, tfidf, lr_model, svm_model, bilstm, bert_tok, bert = load_all_models()
 
 # ── Prediction Functions ───────────────────────────────────────────────────────
+def pad_sequences_custom(sequences, maxlen):
+    padded = []
+
+    for seq in sequences:
+
+        seq = seq[:maxlen]
+
+        seq = seq + [0] * (maxlen - len(seq))
+
+        padded.append(seq)
+
+    return np.array(padded)
+
+
+
+
 def predict_lr_svm(text, model, is_svm=False):
     vec = tfidf.transform([text])
     
@@ -115,7 +131,10 @@ def predict_lr_svm(text, model, is_svm=False):
  
 def predict_bilstm(text):
     seq     = keras_tok.texts_to_sequences([text])
-    padded  = pad_sequences(seq, maxlen=50, padding="post")
+    padded = pad_sequences_custom(
+    seq,
+    maxlen=50
+    )
     x       = torch.tensor(padded, dtype=torch.long)
     with torch.no_grad():
         logit, attn_w = bilstm(x)
